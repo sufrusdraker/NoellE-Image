@@ -494,43 +494,48 @@
 
     // Função para gerar arte
     async function gerarArte() {
-        const prompt = document.getElementById("arte-prompt").value.trim();
-        if (!prompt) return alert("Por favor, descreva o que deseja ver.");
+    const prompt = document.getElementById("arte-prompt").value.trim();
+    if (!prompt) return alert("Por favor, descreva o que deseja ver.");
 
-        const resultado = document.getElementById("arte-resultado");
-        const placeholder = resultado.querySelector(".arte-placeholder");
-        const loading = resultado.querySelector(".arte-loading");
-        const error = resultado.querySelector(".arte-error");
-        const imagem = resultado.querySelector("#arte-imagem");
+    const resultado = document.getElementById("arte-resultado");
+    const placeholder = resultado.querySelector(".arte-placeholder");
+    const loading = resultado.querySelector(".arte-loading");
+    const error = resultado.querySelector(".arte-error");
+    const imagem = resultado.querySelector("#arte-imagem");
 
-        // Mostra estado de carregamento
-        placeholder.style.display = "none";
-        error.style.display = "none";
-        imagem.style.display = "none";
-        loading.style.display = "block";
+    // Mostra estado de carregamento
+    placeholder.style.display = "none";
+    error.style.display = "none";
+    imagem.style.display = "none";
+    loading.style.display = "block";
 
-        try {
-            const response = await fetch("http://localhost:575/generate-image", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt })
-            });
+    try {
+        const apiUrl = "https://legal-fish-simply.ngrok-free.app"; // Mesma URL usada no chat
+        const response = await fetch(`${apiUrl}/generate-image`, {  // Endpoint modificado
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ prompt })
+        });
 
-            const data = await response.json();
-            
-            if (data.image_url) {
-                imagem.src = `http://localhost:575${data.image_url}`;
-                imagem.style.display = "block";
-                loading.style.display = "none";
-            } else {
-                throw new Error("Não foi possível gerar a imagem");
-            }
-        } catch (err) {
+        const data = await response.json();
+        
+        if (data.image_url) {
+            // Remove a necessidade do localhost na URL da imagem
+            imagem.src = data.image_url.startsWith('http') 
+                ? data.image_url 
+                : `${apiUrl}${data.image_url}`;
+            imagem.style.display = "block";
             loading.style.display = "none";
-            error.style.display = "block";
-            console.error("Erro ao gerar arte:", err);
+        } else {
+            throw new Error("Não foi possível gerar a imagem");
         }
+    } catch (err) {
+        loading.style.display = "none";
+        error.style.display = "block";
+        console.error("Erro ao gerar arte:", err);
+        error.textContent = `Erro: ${err.message}`;
     }
+}
 
     // Permite gerar arte com Enter
     document.getElementById("arte-prompt").addEventListener("keypress", function(e) {
@@ -538,4 +543,4 @@
     });
 </script>
 </body>
-</html>
+</html> 
