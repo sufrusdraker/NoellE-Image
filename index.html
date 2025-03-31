@@ -3,151 +3,539 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Imagens</title>
+    <title>NoellE</title>
     <style>
-        /* === Estilo Global (Dark Mode) === */
+        /* === Estilos Globais === */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #121212;
-            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
-            padding: 20px;
-            min-height: 100vh;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+
+        /* === Barra Lateral === */
+        #sidebar {
+            width: 220px;
+            background-color: #252525;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            text-align: center;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+            border-right: 1px solid #333;
         }
 
-        h1 {
-            color: #f06292;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-            margin-bottom: 30px;
+        #sidebar.hidden {
+            transform: translateX(-100%);
         }
 
-        /* === Campo de Input === */
-        #prompt {
-            width: 80%;
-            max-width: 600px;
-            padding: 15px;
-            margin-bottom: 20px;
+        #sidebar button {
+            background: none;
             border: none;
-            border-radius: 5px;
-            background-color: #222;
-            color: white;
-            font-size: 16px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: box-shadow 0.3s ease;
-        }
-
-        #prompt:focus {
-            outline: none;
-            box-shadow: 0 0 0 2px #f06292;
-        }
-
-        /* === Botão Estilizado === */
-        button {
-            padding: 12px 25px;
-            background-color: #f06292;
-            border: none;
-            border-radius: 5px;
-            color: white;
-            font-size: 16px;
+            color: #d0d0d0;
+            padding: 12px 15px;
+            text-align: left;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 15px;
+            border-bottom: 1px solid #333;
+            transition: all 0.2s;
         }
 
-        button:hover {
-            background-color: #ec407a;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        #sidebar button:hover {
+            background-color: #333;
+            color: #f8bbd0;
         }
 
-        button:active {
-            transform: translateY(0);
+        #sidebar button:active {
+            background-color: #3a3a3a;
         }
 
-        /* === Área de Resultados === */
-        #resultado {
-            margin-top: 30px;
-            width: 90%;
-            max-width: 800px;
-            min-height: 300px;
-            background-color: #181818;
-            border-radius: 10px;
-            padding: 20px;
+        /* === Conteúdo Principal === */
+        #main {
+            margin-left: 220px;
+            flex: 1;
+            transition: margin-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #main.collapsed {
+            margin-left: 0;
+        }
+
+        /* === Abas de Conteúdo === */
+        .content {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            overflow: auto;
+            background-color: #1e1e1e;
+            padding: 25px;
+        }
+
+        .content.active {
+            display: flex;
+        }
+
+        .content h2 {
+            color: #f8bbd0;
+            margin-top: 0;
+            font-weight: 400;
+            font-size: 1.8em;
+        }
+
+        .content p {
+            color: #b0b0b0;
+            line-height: 1.5;
+        }
+
+        /* === Botão de Alternar === */
+        #toggle-btn {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background-color: #333;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            cursor: pointer;
+            z-index: 1000;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        /* === Estilo do Chatbot === */
+        #chat-history {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+            border: 1px solid #333;
+            background-color: #252525;
+            margin-bottom: 15px;
+            border-radius: 6px;
+        }
+
+        #chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        #user-input {
+            flex: 1;
+            padding: 12px;
+            font-size: 15px;
+            border: 1px solid #333;
+            border-radius: 6px;
+            background-color: #252525;
+            color: white;
+            outline: none;
+        }
+
+        #send-btn {
+            padding: 0 20px;
+            background-color: #3a3a3a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        /* === Quarto da NoellE === */
+        .room {
+            width: 100%;
+            max-width: 500px;
+            height: 350px;
+            background-color: #2a2a2a;
+            border: 1px solid #444;
+            border-radius: 8px;
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .furniture {
+            position: absolute;
+            border-radius: 4px;
+            background-color: #3a3a3a;
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            cursor: move;
+            user-select: none;
+            color: #d0d0d0;
+            font-size: 14px;
         }
 
-        #resultado img {
+        .bed {
+            width: 120px;
+            height: 70px;
+            bottom: 20px;
+            left: 20px;
+            background-color: #4a3a5a;
+        }
+
+        .desk {
+            width: 90px;
+            height: 60px;
+            bottom: 20px;
+            right: 20px;
+            background-color: #3a4a3a;
+        }
+
+        .shelf {
+            width: 180px;
+            height: 25px;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #5a4a3a;
+        }
+
+        /* === Área de Arte Discreta === */
+        #arte-content {
+            padding: 20px;
+        }
+
+        .arte-container {
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .arte-input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #arte-prompt {
+            flex: 1;
+            padding: 12px;
+            background-color: #252525;
+            border: 1px solid #333;
+            border-radius: 6px;
+            color: #e0e0e0;
+            font-size: 15px;
+            outline: none;
+        }
+
+        #arte-gerar {
+            padding: 0 20px;
+            background-color: #3a3a3a;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #arte-gerar:hover {
+            background-color: #4a4a4a;
+        }
+
+        #arte-resultado {
+            background-color: #252525;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #arte-resultado img {
             max-width: 100%;
-            max-height: 70vh;
-            border-radius: 5px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            border: 2px solid #333;
+            max-height: 400px;
+            border-radius: 4px;
+            display: none;
         }
 
-        /* === Efeitos Especiais === */
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        .arte-placeholder {
+            color: #666;
+            font-style: italic;
+            text-align: center;
         }
 
-        button:hover {
-            animation: pulse 1.5s infinite;
+        .arte-loading {
+            color: #f8bbd0;
+            display: none;
+        }
+
+        .arte-error {
+            color: #ff6b6b;
+            display: none;
         }
 
         /* === Responsividade === */
-        @media (max-width: 600px) {
-            #prompt {
-                width: 95%;
+        @media (max-width: 768px) {
+            #sidebar {
+                width: 200px;
             }
-            
-            h1 {
-                font-size: 24px;
+            #main {
+                margin-left: 200px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .arte-input-group {
+                flex-direction: column;
+            }
+            #arte-gerar {
+                padding: 12px;
             }
         }
     </style>
 </head>
 <body>
-    <h1>Gerador de Imagens com IA</h1>
-    <input type="text" id="prompt" placeholder="Digite um prompt...">
-    <button onclick="gerarImagem()">Gerar Imagem</button>
-    <div id="resultado"></div>
 
-    <script>
-        async function gerarImagem() {
-            const prompt = document.getElementById("prompt").value;
-            if (!prompt) {
-                alert("Por favor, digite um prompt!");
-                return;
-            }
+<!-- Barra lateral -->
+<div id="sidebar" class="hidden">
+    <button onclick="showContent('home')">Página Principal</button>
+    <button onclick="showContent('chatbot')">Chatbot</button>
+    <button onclick="showContent('diario')">Diário Compartilhado</button>
+    <button onclick="showContent('jogos')">Jogos</button>
+    <button onclick="showContent('estudo')">Área de Estudo</button>
+    <button onclick="showContent('quarto')">Quarto da NoellE</button>
+    <button onclick="showContent('arte')">Vamos Fazer Arte?</button>
+    <button onclick="showContent('config')">Configurações</button>
+</div>
 
-            // Adicione um loader enquanto a imagem é gerada
-            document.getElementById("resultado").innerHTML = '<p style="color:#f06292">Gerando imagem...</p>';
+<!-- Conteúdo principal -->
+<div id="main" class="collapsed">
+
+    <!-- Página Principal -->
+    <div id="home-content" class="content active">
+        <h2>Oi, sou a NoellE!</h2>
+        <p>Bem-vindo ao meu espaço! Se você está aqui, significa que algo interessante está prestes a acontecer. Explore, se divirta e, quem sabe, até aprenda algo novo comigo. Vamos ver no que dá?</p>
+    </div>
+
+    <!-- Chatbot -->
+    <div id="chatbot-content" class="content">
+        <h2>Chatbot</h2>
+        <div style="display: flex; flex-direction: column; height: 100%;">
+            <div id="chat-history">
+                <p><strong>NoellE:</strong> Oi! Como posso te ajudar hoje?</p>
+            </div>
+            <div id="chat-input">
+                <input id="user-input" type="text" placeholder="Digite sua mensagem..." autocomplete="off">
+                <button id="send-btn" onclick="sendMessage()">Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quarto da NoellE -->
+    <div id="quarto-content" class="content">
+        <h2>Quarto da NoellE</h2>
+        <p>Bem-vindo ao quarto da NoellE. Personalize o espaço dela aqui!</p>
+
+        <div class="room" id="room">
+            <div class="furniture bed" id="bed" draggable="true" ondragstart="drag(event)">
+                Cama
+            </div>
+            <div class="furniture desk" id="desk" draggable="true" ondragstart="drag(event)">
+                Escrivaninha
+            </div>
+            <div class="furniture shelf" id="shelf" draggable="true" ondragstart="drag(event)">
+                Prateleira
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="resetRoom()">Resetar Quarto</button>
+        </div>
+    </div>
+
+    <!-- Área de Arte Discreta -->
+    <div id="arte-content" class="content">
+        <div class="arte-container">
+            <h2>Vamos Fazer Arte?</h2>
+            <p>Descreva o que imagina e eu tentarei criar uma representação visual para você.</p>
+            
+            <div class="arte-input-group">
+                <input type="text" id="arte-prompt" placeholder="Ex: 'paisagem noturna com estrelas'">
+                <button id="arte-gerar" onclick="gerarArte()">Criar</button>
+            </div>
+            
+            <div id="arte-resultado">
+                <p class="arte-placeholder">Sua imagem aparecerá aqui...</p>
+                <p class="arte-loading">Criando sua arte, por favor aguarde...</p>
+                <p class="arte-error">Ocorreu um erro ao gerar sua imagem.</p>
+                <img id="arte-imagem" src="" alt="Imagem gerada">
+            </div>
+        </div>
+    </div>
+
+    <!-- Outras abas -->
+    <div id="diario-content" class="content">
+        <h2>Diário Compartilhado</h2>
+        <p>Escreva e compartilhe seus pensamentos com a NoellE.</p>
+    </div>
+
+    <div id="jogos-content" class="content">
+        <h2>Jogos</h2>
+        <p>Divirta-se jogando com a NoellE!</p>
+    </div>
+
+    <div id="estudo-content" class="content">
+        <h2>Área de Estudo</h2>
+        <p>Aprenda e explore novos conhecimentos com a NoellE.</p>
+    </div>
+
+    <div id="config-content" class="content">
+        <h2>Configurações</h2>
+        <p>Altere as configurações do site ou personalize sua experiência.</p>
+    </div>
+</div>
+
+<!-- Botão para alternar a barra lateral -->
+<button id="toggle-btn" onclick="toggleSidebar()">☰</button>
+
+<script>
+    // Alterna a exibição da barra lateral
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const main = document.getElementById('main');
+        sidebar.classList.toggle('hidden');
+        main.classList.toggle('collapsed');
+    }
+
+    // Exibe o conteúdo correspondente à aba selecionada
+    function showContent(contentId) {
+        const contents = document.querySelectorAll('.content');
+        contents.forEach(content => content.classList.remove('active'));
+        const selectedContent = document.getElementById(contentId + '-content');
+        if (selectedContent) {
+            selectedContent.classList.add('active');
+        }
+    }
+
+    // Chatbot - Envia mensagem
+    async function sendMessage() {
+        const userInput = document.getElementById("user-input");
+        const chatHistory = document.getElementById("chat-history");
+        const apiUrl = "https://legal-fish-simply.ngrok-free.app";
+
+        if (userInput.value.trim() !== "") {
+            const userMessage = document.createElement("p");
+            userMessage.innerHTML = `<strong>Você:</strong> ${userInput.value}`;
+            chatHistory.appendChild(userMessage);
+            userInput.value = "";
 
             try {
-                const response = await fetch("http://localhost:575/generate-image", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt })
+                const response = await fetch(`${apiUrl}/chat`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message: userInput.value })
                 });
-
                 const data = await response.json();
-                if (data.image_url) {
-                    document.getElementById("resultado").innerHTML = `<img src="http://localhost:575${data.image_url}" alt="Imagem Gerada">`;
-                } else {
-                    throw new Error("URL da imagem não encontrada");
+
+                if (data.response) {
+                    const botMessage = document.createElement("p");
+                    botMessage.innerHTML = `<strong>NoellE:</strong> ${data.response}`;
+                    chatHistory.appendChild(botMessage);
                 }
             } catch (error) {
-                document.getElementById("resultado").innerHTML = `<p style="color:#ff5555">Erro ao gerar imagem: ${error.message}</p>`;
+                const botMessage = document.createElement("p");
+                botMessage.innerHTML = `<strong>NoellE:</strong> Desculpe, houve um erro. Tente novamente.`;
+                chatHistory.appendChild(botMessage);
             }
+
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         }
-    </script>
+    }
+
+    // Permite enviar mensagem com Enter
+    document.getElementById("user-input").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") sendMessage();
+    });
+
+    // Funções para o quarto arrastável
+    function allowDrop(e) { e.preventDefault(); }
+    function drag(e) { e.dataTransfer.setData("text", e.target.id); }
+
+    function drop(e) {
+        e.preventDefault();
+        const id = e.dataTransfer.getData("text");
+        const element = document.getElementById(id);
+        const room = document.getElementById("room");
+        const rect = room.getBoundingClientRect();
+
+        const x = e.clientX - rect.left - element.offsetWidth / 2;
+        const y = e.clientY - rect.top - element.offsetHeight / 2;
+
+        element.style.left = Math.max(0, Math.min(x, rect.width - element.offsetWidth)) + "px";
+        element.style.top = Math.max(0, Math.min(y, rect.height - element.offsetHeight)) + "px";
+    }
+
+    function resetRoom() {
+        const elements = {
+            bed: { left: "20px", bottom: "20px" },
+            desk: { right: "20px", bottom: "20px" },
+            shelf: { left: "50%", top: "20px", transform: "translateX(-50%)" }
+        };
+
+        for (const [id, styles] of Object.entries(elements)) {
+            const el = document.getElementById(id);
+            Object.assign(el.style, styles);
+        }
+    }
+
+    // Configura eventos do quarto
+    document.getElementById("room").addEventListener("dragover", allowDrop);
+    document.getElementById("room").addEventListener("drop", drop);
+
+    // Função para gerar arte
+    async function gerarArte() {
+        const prompt = document.getElementById("arte-prompt").value.trim();
+        if (!prompt) return alert("Por favor, descreva o que deseja ver.");
+
+        const resultado = document.getElementById("arte-resultado");
+        const placeholder = resultado.querySelector(".arte-placeholder");
+        const loading = resultado.querySelector(".arte-loading");
+        const error = resultado.querySelector(".arte-error");
+        const imagem = resultado.querySelector("#arte-imagem");
+
+        // Mostra estado de carregamento
+        placeholder.style.display = "none";
+        error.style.display = "none";
+        imagem.style.display = "none";
+        loading.style.display = "block";
+
+        try {
+            const response = await fetch("http://localhost:575/generate-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt })
+            });
+
+            const data = await response.json();
+            
+            if (data.image_url) {
+                imagem.src = `http://localhost:575${data.image_url}`;
+                imagem.style.display = "block";
+                loading.style.display = "none";
+            } else {
+                throw new Error("Não foi possível gerar a imagem");
+            }
+        } catch (err) {
+            loading.style.display = "none";
+            error.style.display = "block";
+            console.error("Erro ao gerar arte:", err);
+        }
+    }
+
+    // Permite gerar arte com Enter
+    document.getElementById("arte-prompt").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") gerarArte();
+    });
+</script>
 </body>
 </html>
