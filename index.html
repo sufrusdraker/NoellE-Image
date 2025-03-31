@@ -5,20 +5,112 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gerador de Imagens</title>
     <style>
+        /* === Estilo Global (Dark Mode) === */
         body {
             font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             text-align: center;
-            margin: 50px;
         }
-        input, button {
-            margin: 10px;
-            padding: 10px;
+
+        h1 {
+            color: #f06292;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            margin-bottom: 30px;
+        }
+
+        /* === Campo de Input === */
+        #prompt {
+            width: 80%;
+            max-width: 600px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #222;
+            color: white;
             font-size: 16px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: box-shadow 0.3s ease;
         }
-        img {
-            margin-top: 20px;
+
+        #prompt:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #f06292;
+        }
+
+        /* === Botão Estilizado === */
+        button {
+            padding: 12px 25px;
+            background-color: #f06292;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        button:hover {
+            background-color: #ec407a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        /* === Área de Resultados === */
+        #resultado {
+            margin-top: 30px;
+            width: 90%;
+            max-width: 800px;
+            min-height: 300px;
+            background-color: #181818;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+        }
+
+        #resultado img {
             max-width: 100%;
-            border: 2px solid #000;
+            max-height: 70vh;
+            border-radius: 5px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            border: 2px solid #333;
+        }
+
+        /* === Efeitos Especiais === */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        button:hover {
+            animation: pulse 1.5s infinite;
+        }
+
+        /* === Responsividade === */
+        @media (max-width: 600px) {
+            #prompt {
+                width: 95%;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
@@ -36,17 +128,24 @@
                 return;
             }
 
-            const response = await fetch("http://localhost:575/generate-image", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ prompt })
-            });
+            // Adicione um loader enquanto a imagem é gerada
+            document.getElementById("resultado").innerHTML = '<p style="color:#f06292">Gerando imagem...</p>';
 
-            const data = await response.json();
-            if (data.image_url) {
-                document.getElementById("resultado").innerHTML = `<img src="http://localhost:575${data.image_url}" alt="Imagem Gerada">`;
-            } else {
-                alert("Erro ao gerar a imagem!");
+            try {
+                const response = await fetch("http://localhost:575/generate-image", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt })
+                });
+
+                const data = await response.json();
+                if (data.image_url) {
+                    document.getElementById("resultado").innerHTML = `<img src="http://localhost:575${data.image_url}" alt="Imagem Gerada">`;
+                } else {
+                    throw new Error("URL da imagem não encontrada");
+                }
+            } catch (error) {
+                document.getElementById("resultado").innerHTML = `<p style="color:#ff5555">Erro ao gerar imagem: ${error.message}</p>`;
             }
         }
     </script>
