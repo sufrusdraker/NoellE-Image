@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Imagens</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>Gerador de Imagens com IA</h1>
+    <input type="text" id="prompt" placeholder="Digite um prompt...">
+    <button onclick="gerarImagem()">Gerar Imagem</button>
+    <div id="resultado"></div>
+
+    <script>
+        async function gerarImagem() {
+            const prompt = document.getElementById("prompt").value;
+            if (!prompt) {
+                alert("Por favor, digite um prompt!");
+                return;
+            }
+
+            const response = await fetch("http://localhost:575/generate-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt })
+            });
+
+            const data = await response.json();
+            if (data.image_url) {
+                document.getElementById("resultado").innerHTML = `<img src="http://localhost:575${data.image_url}" alt="Imagem Gerada">`;
+            } else {
+                alert("Erro ao gerar a imagem!");
+            }
+        }
+    </script>
+</body>
+</html>
